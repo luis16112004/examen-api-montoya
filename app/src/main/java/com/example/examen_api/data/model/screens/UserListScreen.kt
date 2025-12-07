@@ -6,27 +6,40 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.examen_api.ui.viewmodel.UserViewModel // Asegúrate de importar el ViewModel real si obtienes datos de ahí
+import com.example.examen_api.ui.components.UserCard
+import com.example.examen_api.ui.viewmodel.UserViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserListScreen(
     navController: NavHostController,
-    // Si tienes un ViewModel para listar usuarios, inyéctalo aquí:
-    // viewModel: UserViewModel = hiltViewModel()
+    viewModel: UserViewModel = hiltViewModel()
 ) {
-    // Si estás usando datos reales del ViewModel, reemplaza esto.
-    // Si usas datos mockeados para probar la UI, asegúrate que los IDs sean números en String
-    val users = listOf(
-        UserItem("1", "Usuario 1"),
-        UserItem("2", "Usuario 2"),
-        UserItem("3", "Usuario 3")
-    )
+    val users by viewModel.users.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadUsers()
+    }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { message ->
+            scope.launch {
+                snackbarHostState.showSnackbar(message)
+                viewModel.clearError()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -38,42 +51,52 @@ fun UserListScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Crear usuario")
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(16.dp)
+                .padding(paddingValues)
         ) {
-            items(users) { user ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        navController.navigate("detail/${user.id}")
-                    }
+            if (isLoading && users.isEmpty()) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else if (users.isEmpty() && !isLoading) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    ListItem(
-                        headlineContent = { Text(user.name) },
-                        supportingContent = { Text("ID: ${user.id}") },
-                        trailingContent = {
-                            IconButton(
-                                onClick = {
-                                    navController.navigate("edit/${user.id}")
-                                }
-                            ) {
-                                Text("Editar")
-                            }
-                        }
+                    Text(
+                        text = "No hay usuarios registrados",
+                        style = MaterialTheme.typography.bodyLarge
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Presiona el botón + para crear uno",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(16.dp)
+                ) {
+                    items(users) { user ->
+                        UserCard(
+                            user = user,
+                            onClick = {
+                                navController.navigate("detail/${user.id}")
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 }
-
-data class UserItem(
-    val id: String,
-    val name: String
-)

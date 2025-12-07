@@ -27,6 +27,7 @@ fun UserDetailScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(userId) {
         // CORRECCIÓN: Convertir String a Int de forma segura
@@ -65,11 +66,7 @@ fun UserDetailScreen(
                         )
                     }
                     IconButton(onClick = {
-                        // CORRECCIÓN: Convertir String a Int para eliminar
-                        val idAsInt = userId.toIntOrNull() ?: 0
-                        viewModel.deleteUser(idAsInt) {
-                            navController.navigateUp()
-                        }
+                        showDeleteDialog = true
                     }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -81,6 +78,37 @@ fun UserDetailScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
+        // Diálogo de confirmación de eliminación
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Confirmar eliminación") },
+                text = { Text("¿Seguro que deseas eliminar este usuario? Esta acción no se puede deshacer.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            val idAsInt = userId.toIntOrNull() ?: 0
+                            viewModel.deleteUser(idAsInt) {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Usuario eliminado exitosamente")
+                                }
+                                navController.navigateUp()
+                            }
+                        }
+                    ) {
+                        Text("Eliminar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showDeleteDialog = false }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -113,7 +141,7 @@ fun UserDetailScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Teléfono: ${user!!.phone}",
+                                text = "Teléfono: ${user!!.phone ?: "No disponible"}",
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(modifier = Modifier.height(8.dp))

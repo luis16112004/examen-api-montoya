@@ -145,10 +145,7 @@ fun UserCreateScreen(
                         hasError = true
                     }
 
-                    if (phone.isBlank()) {
-                        phoneError = true
-                        hasError = true
-                    }
+                    // Phone es opcional, no validamos si está vacío
 
                     if (email.isBlank() || !email.contains("@")) {
                         emailError = true
@@ -158,7 +155,7 @@ fun UserCreateScreen(
                     if (!hasError) {
                         val newUser = User(
                             name = name,
-                            phone = phone,
+                            phone = phone.ifBlank { null },
                             email = email
                         )
                         viewModel.createUser(newUser) {

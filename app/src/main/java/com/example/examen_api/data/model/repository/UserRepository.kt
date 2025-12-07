@@ -1,12 +1,12 @@
 package com.example.examen_api.data.repository
 
 import com.example.examen_api.data.model.User
-import com.example.examen_api.data.network.RetrofitClient
+import com.example.examen_api.data.network.ApiService
 import javax.inject.Inject
 
-class UserRepository @Inject constructor() {
-    private val apiService = RetrofitClient.instance
-
+class UserRepository @Inject constructor(
+    private val apiService: ApiService
+) {
     suspend fun getAllUsers(): List<User> = apiService.getUsers()
 
     suspend fun getUserById(id: Int): User = apiService.getUserById(id)

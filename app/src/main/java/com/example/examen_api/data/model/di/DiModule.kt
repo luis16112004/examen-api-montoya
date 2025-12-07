@@ -1,5 +1,7 @@
 package com.example.examen_api.di
 
+import com.example.examen_api.data.network.ApiService
+import com.example.examen_api.data.network.RetrofitClient
 import com.example.examen_api.data.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -13,7 +15,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserRepository(): UserRepository {
-        return UserRepository()
+    fun provideApiService(): ApiService {
+        return RetrofitClient.instance
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(apiService: ApiService): UserRepository {
+        return UserRepository(apiService)
     }
 }

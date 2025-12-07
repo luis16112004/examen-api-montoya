@@ -36,8 +36,13 @@ fun UserCard(
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "📞 ${user.phone}",
+            user.phone?.let {
+                Text(
+                    text = "📞 $it",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } ?: Text(
+                text = "📞 No disponible",
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(

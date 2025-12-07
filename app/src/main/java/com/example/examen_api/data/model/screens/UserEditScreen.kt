@@ -203,10 +203,7 @@ fun UserEditScreen(
                                     hasError = true
                                 }
 
-                                if (phone.isBlank()) {
-                                    phoneError = true
-                                    hasError = true
-                                }
+                                // Phone es opcional, no validamos si está vacío
 
                                 if (email.isBlank() || !email.contains("@")) {
                                     emailError = true
@@ -217,7 +214,7 @@ fun UserEditScreen(
                                     val updatedUser = User(
                                         id = user!!.id,
                                         name = name,
-                                        phone = phone,
+                                        phone = phone.ifBlank { null },
                                         email = email
                                     )
                                     // CORRECCIÓN: Convertir ID String a Int para el update
