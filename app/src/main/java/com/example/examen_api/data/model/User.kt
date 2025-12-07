@@ -7,6 +7,7 @@ data class User(
     val name: String,
     val phone: String? = null,
     val email: String,
+    val password: String? = null, // Solo para crear/actualizar, no se muestra
     @SerializedName("created_at") val createdAt: String? = null,
     @SerializedName("updated_at") val updatedAt: String? = null
 )

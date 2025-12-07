@@ -24,6 +24,7 @@ fun UserCreateScreen(
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("12345678") } // Contraseña por defecto
     var nameError by remember { mutableStateOf(false) }
     var phoneError by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf(false) }
@@ -156,7 +157,8 @@ fun UserCreateScreen(
                         val newUser = User(
                             name = name,
                             phone = phone.ifBlank { null },
-                            email = email
+                            email = email,
+                            password = password.ifBlank { "12345678" } // Contraseña por defecto si está vacía
                         )
                         viewModel.createUser(newUser) {
                             scope.launch {
