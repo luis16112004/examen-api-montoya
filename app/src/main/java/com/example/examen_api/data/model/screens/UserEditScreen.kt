@@ -47,7 +47,7 @@ fun UserEditScreen(
     LaunchedEffect(user) {
         user?.let {
             name = it.name
-            phone = it.phone
+            phone = it.phone ?: ""
             email = it.email
         }
     }
