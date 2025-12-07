@@ -13,7 +13,8 @@ class UserRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             return response.body()!!
         } else {
-            throw Exception("Error al obtener usuarios: ${response.code()} - ${response.message()}")
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            throw Exception("Error al obtener usuarios: ${response.code()} - ${response.message()}\n$errorBody")
         }
     }
 
